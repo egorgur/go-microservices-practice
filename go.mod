@@ -1,3 +1,3 @@
-module github.com/egorgur/go-microsevices-practice
+module github.com/egorgur/go-microservices-practice
 
 go 1.23.1
