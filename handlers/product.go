@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -24,31 +25,31 @@ func NewProducts(l *log.Logger) *Products {
 // 		p.getProducts(rw, r)
 // 		return
 // 	}
-
+//
 // 	if r.Method == http.MethodPost {
 // 		p.l.Println("Handle POST request")
 // 		p.addProduct(rw, r)
 // 		return
 // 	}
-
+//
 // 	if r.Method == http.MethodPut {
 // 		// expect the id in the URI
 // 		p.l.Println("Handle PUT request")
-// 		re := regexp.MustCompile(`/([0-9]+)`)
+//		// re := regexp.MustCompile(`/([0-9]+)`)
 // 		foundMatches := re.FindAllStringSubmatch(r.URL.Path, -1)
-
+//
 // 		if len(foundMatches) != 1 {
 // 			http.Error(rw, "Invalid URL", http.StatusBadRequest)
 // 			p.l.Printf("Invalid URL parsing %#v", foundMatches)
 // 			return
 // 		}
-
+//
 // 		if len(foundMatches[0]) != 2 {
 // 			http.Error(rw, "Invalid URL", http.StatusBadRequest)
 // 			p.l.Printf("Invalid URL parsing %#v", foundMatches)
 // 			return
 // 		}
-
+//
 // 		idString := foundMatches[0][1]
 // 		id, err := strconv.Atoi(idString)
 // 		if err != nil {
@@ -56,10 +57,10 @@ func NewProducts(l *log.Logger) *Products {
 // 			p.l.Fatalf("Invalid URL parsing %#v", idString)
 // 			return
 // 		}
-
+//
 // 		p.updateProduct(rw, r, id)
 // 	}
-
+//
 // 	// catch all not implemented
 // 	rw.WriteHeader(http.StatusMethodNotAllowed)
 // }
@@ -112,6 +113,14 @@ func (p Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 			http.Error(rw, "Unable to unmarshal json", http.StatusBadRequest)
 			return
 		}
+
+		// validate the product
+		err = prod.Validate() 
+		if err != nil {
+			p.l.Println("[ERROR] validating product", err)
+			http.Error(rw, fmt.Sprintf("Error validating product %s", err), http.StatusBadRequest)
+		}
+
 
 		ctx := context.WithValue(r.Context(), KeyProduct{}, prod)
 		req := r.WithContext(ctx)
